@@ -1,93 +1,79 @@
 # M3203_VlasovAA
 
 
+# Проектирование баз данных 
 
-## Getting started
+# Предметная область: OZON (маркетплейс)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+# Функциональные требования
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+1. **Регистрация и авторизация пользователей:**
+    
+    - Система должна предоставлять возможность регистрации новых пользователей (покупателей и продавцов) через email или номер телефона.
+        
+    - Система должна обеспечивать авторизацию зарегистрированных пользователей.
+        
+    - Система должна поддерживать восстановление пароля в случае его утери.
+        
+2. **Управление профилем пользователя:**
+    
+    - Покупатели должны иметь возможность редактировать свои личные данные (имя, адрес, телефон, email).
+        
+    - Продавцы должны иметь возможность добавлять и редактировать информацию о своем магазине (название, описание, контакты).
+        
+3. **Поиск и фильтрация товаров:**
+    
+    - Система должна предоставлять возможность поиска товаров по ключевым словам, категориям, брендам и другим параметрам.
+        
+    - Пользователи должны иметь возможность фильтровать товары по цене, рейтингу, наличию, доставке и другим критериям.
+        
+4. **Просмотр карточки товара:**
+    
+    - Для каждого товара должна быть доступна детальная информация: название, описание, цена, скидка, отзывы, рейтинг, наличие на складе.
+        
+    - Пользователи должны иметь возможность оставлять отзывы и оценки для товаров.
+        
+5. **Управление корзиной и оформление заказа:**
+    
+    - Пользователи должны иметь возможность добавлять товары в корзину, изменять количество товаров и удалять их из корзины.
+        
+    - Система должна предоставлять возможность оформления заказа с выбором способа оплаты и доставки.
+        
+    - Пользователи должны иметь возможность отслеживать статус заказа.
 
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.sqlwars.ru/dbd25/M3203_VlasovAA.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.sqlwars.ru/dbd25/M3203_VlasovAA/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+	 - Кроме корзины пользователь может лайкнуть товар
+6. **Оплата товаров:**
+    
+    - Система должна поддерживать различные способы оплаты: банковские карты, электронные кошельки, оплата при получении.
+        
+7. **Доставка товаров:**
+    
+    - Система должна предоставлять выбор способов доставки: курьерская доставка, самовывоз, почтовая доставка.
+        
+    - Пользователи должны иметь возможность отслеживать статус доставки.
+        
+8. **Управление заказами для продавцов:**
+    
+    - Продавцы должны иметь возможность добавлять, редактировать и удалять товары в своем магазине.
+        
+    - Продавцы должны видеть список заказов, их статусы и контактные данные покупателей.
+        
+9. **Система уведомлений:**
+    
+    - Пользователи должны получать уведомления о статусе заказа, акциях и новых поступлениях через email, SMS или push-уведомления.
+        
+10. **Администрирование системы:**
+    
+    - Администратор должен иметь возможность управлять пользователями, товарами, заказами и настройками системы.
+        
+    - Администратор должен иметь доступ к аналитике: продажи, популярные товары, активность пользователей.
+        
+11. **Система скидок и акций:**
+    
+    - Система должна поддерживать создание скидок, акций и промокодов для товаров.
+        
+    - Пользователи должны иметь возможность применять промокоды при оформлении заказа.
+        
+12. **Рекомендации и персонализация:**
+    
+    - Система должна предлагать персонализированные рекомендации товаров на основе истории покупок и просмотров пользователя.
