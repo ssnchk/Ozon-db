@@ -110,7 +110,6 @@
 # ERD
 
 ```plantuml
-@startuml
 entity Admin{
   * admin_id : int
   login : varchar(255)
