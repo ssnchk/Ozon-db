@@ -428,6 +428,4 @@ entity Notification {
 Customer ||--o{ Notification
 Seller ||--o{ Notification
 PickUpPointWorker ||--o{Notification
-
-@enduml
 ```
