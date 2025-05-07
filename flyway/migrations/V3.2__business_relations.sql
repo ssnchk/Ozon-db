@@ -3,7 +3,7 @@ $$
     BEGIN
         CREATE TYPE order_status_type AS ENUM ('new', 'processing', 'issued');
     EXCEPTION
-        WHEN duplicate_object THEN RAISE NOTICE 'Type order_status_type already exists.';
+        WHEN duplicate_object THEN null;
     END
 $$;
 
@@ -12,7 +12,7 @@ $$
     BEGIN
         CREATE TYPE delivery_type_type AS ENUM ('pickup', 'delivery');
     EXCEPTION
-        WHEN duplicate_object THEN RAISE NOTICE 'Type delivery_type_type already exists.';
+        WHEN duplicate_object THEN null;
     END
 $$;
 
@@ -21,7 +21,7 @@ $$
     BEGIN
         CREATE TYPE order_detail_status_type AS ENUM ('processing', 'shipped', 'delivered', 'issued');
     EXCEPTION
-        WHEN duplicate_object THEN RAISE NOTICE 'Type order_detail_status_type already exists.';
+        WHEN duplicate_object THEN null;
     END
 $$;
 
@@ -30,7 +30,7 @@ $$
     BEGIN
         CREATE TYPE inventory_status_type AS ENUM ('awaiting_pickup', 'picked_up');
     EXCEPTION
-        WHEN duplicate_object THEN RAISE NOTICE 'Type inventory_status_type already exists.';
+        WHEN duplicate_object THEN null;
     END
 $$;
 
@@ -46,7 +46,7 @@ $$
             'maintenance'
             );
     EXCEPTION
-        WHEN duplicate_object THEN RAISE NOTICE 'Type transaction_source_type already exists.';
+        WHEN duplicate_object THEN null;
     END
 $$;
 
@@ -55,7 +55,7 @@ $$
     BEGIN
         CREATE TYPE destination_type_type AS ENUM ('customer', 'seller', 'worker');
     EXCEPTION
-        WHEN duplicate_object THEN RAISE NOTICE 'Type destination_type_type already exists.';
+        WHEN duplicate_object THEN null;
     END
 $$;
 
@@ -64,7 +64,7 @@ $$
     BEGIN
         CREATE TYPE notification_type_type AS ENUM ('email', 'sms', 'push');
     EXCEPTION
-        WHEN duplicate_object THEN RAISE NOTICE 'Type notification_type_type already exists.';
+        WHEN duplicate_object THEN null;
     END
 $$;
 

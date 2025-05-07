@@ -8,7 +8,7 @@ services:
         env_file:
           - .env
         ports:
-          - ${LOCAL_PORT}:5432a
+          - ${LOCAL_PORT}:5432
         volumes:
           - ./postgres_db/init_scripts:/docker-entrypoint-initdb.d
           - db-data:/var/lib/postgresql/data
