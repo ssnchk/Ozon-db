@@ -340,15 +340,18 @@ entity PickUpPointTransaction {
 
 PickUpPointTransaction }o--||PickUpPoint
 
+class work_hours {
+    opens_at : time
+    closes_at : time
+}
 
 entity PickupPointSchedule {
     * schedule_id : int
-    --
-    day_of_week : enum ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-    opens_at : time
-    closes_at : time 
+    ---
+    weekly_hours : work_hours[7]
 }
 
+work_hours -- PickupPointSchedule
 PickUpPoint ||--||PickupPointSchedule
 PickUpPoint ||--|| Address
 
@@ -418,7 +421,7 @@ entity Notification {
   * notification_id : int
   user_id : int <<FK>>
   --
-  destionation_type : ['customer', 'seller', 'worker']
+  destionation_type : enum ['customer', 'seller', 'worker']
   type : enum ['email', 'sms', 'push']
   message : text
   is_read : boolean
