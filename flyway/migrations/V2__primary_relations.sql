@@ -47,7 +47,11 @@ CREATE TABLE IF NOT EXISTS Warehouse
     contact_phone VARCHAR(50)  NOT NULL
 );
 
-INSERT INTO CustomerAddresses (customer_id, address_id)
+DO
+$$
+    BEGIN
+        IF '${APP_ENV}' = 'dev' THEN
+            EXECUTE 'INSERT INTO CustomerAddresses (customer_id, address_id)
 SELECT c.customer_id, a.address_id
 FROM
     (SELECT customer_id, ROW_NUMBER() OVER () as rn FROM Customer LIMIT ${SEED_COUNT}) c
@@ -58,7 +62,7 @@ FROM
 INSERT INTO Store (seller_id, is_banned, name, description, contact_phone_number, contact_mail)
 SELECT s.seller_id,
        false,
-       'Store of ' || s.full_name,
+       ''Store of '' || s.full_name,
        faker.paragraph(2),
        faker.unique_phone_number(),
        faker.unique_email()
@@ -67,7 +71,7 @@ FROM Seller s;
 INSERT INTO ProductSubcategory (product_category_id, name)
 SELECT
     pc.product_category_id,
-    'subcategory of ' || pc.product_category_id
+    ''subcategory of '' || pc.product_category_id
 FROM
     ProductCategory pc,
     generate_series(1, 3);
@@ -94,7 +98,12 @@ ON CONFLICT DO NOTHING;
 INSERT INTO Warehouse (address_id, name, contact_phone)
 SELECT
     a.address_id,
-    'OZON:' || a.address_id,
+    ''OZON:'' || a.address_id,
     faker.phone_number()
 FROM
     (SELECT address_id FROM Address ORDER BY random() LIMIT ${SEED_COUNT} / 10) a;
+';
+        END IF;
+    END
+$$;
+

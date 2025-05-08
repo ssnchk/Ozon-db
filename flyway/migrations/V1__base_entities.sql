@@ -113,6 +113,11 @@ CREATE TABLE IF NOT EXISTS PickupPointSchedule
     weekly_hours work_hours[7] NOT NULL
 );
 
+DO
+$$
+    BEGIN
+        IF '${APP_ENV}' = 'dev' THEN
+            EXECUTE '
 INSERT INTO Admin (login, password)
 SELECT faker.unique_user_name(),
        faker.password()
@@ -166,20 +171,24 @@ SELECT faker.unique_password(),
 FROM generate_series(1, ${SEED_COUNT} / 3);
 
 INSERT INTO Payment (payment_method, amount, status, created_at)
-SELECT (ARRAY ['bank_card', 'e_wallet', 'cash_on_delivery'])[random_between(1, 3)]::payment_method_type,
+SELECT (ARRAY [''bank_card'', ''e_wallet'', ''cash_on_delivery''])[random_between(1, 3)]::payment_method_type,
        0,
-       (ARRAY ['pending', 'completed', 'failed'])[random_between(1, 3)]::payment_status_type,
-       NOW() - (random_between(1, 365) || ' days')::interval
+       (ARRAY [''pending'', ''completed'', ''failed''])[random_between(1, 3)]::payment_status_type,
+       NOW() - (random_between(1, 365) || '' days'')::interval
 FROM generate_series(1, ${SEED_COUNT});
 
 INSERT INTO PickupPointSchedule (weekly_hours)
 SELECT ARRAY[
-           ROW(((random_between(0, 3) + 8)::varchar || ':00')::TIME, ((random_between(0, 4) + 16)::varchar || ':00')::TIME),
-           ROW(((random_between(0, 3) + 8)::varchar || ':00')::TIME, ((random_between(0, 4) + 16)::varchar || ':00')::TIME),
-           ROW(((random_between(0, 3) + 8)::varchar || ':00')::TIME, ((random_between(0, 4) + 16)::varchar || ':00')::TIME),
-           ROW(((random_between(0, 3) + 8)::varchar || ':00')::TIME, ((random_between(0, 4) + 16)::varchar || ':00')::TIME),
-           ROW(((random_between(0, 3) + 8)::varchar || ':00')::TIME, ((random_between(0, 4) + 16)::varchar || ':00')::TIME),
-           ROW(((random_between(0, 3) + 8)::varchar || ':00')::TIME, ((random_between(0, 4) + 16)::varchar || ':00')::TIME),
-           ROW(((random_between(0, 3) + 8)::varchar || ':00')::TIME, ((random_between(0, 4) + 16)::varchar || ':00')::TIME)]
-               ::work_hours[]
+           ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME),
+           ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME),
+           ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME),
+           ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME),
+           ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME),
+           ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME),
+           ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME)]
+           ::work_hours[]
 FROM generate_series(1, ${SEED_COUNT});
+';
+        END IF;
+    END
+$$;

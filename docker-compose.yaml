@@ -13,12 +13,13 @@ services:
           - ./postgres_db/init_scripts:/docker-entrypoint-initdb.d
           - db-data:/var/lib/postgresql/data
         healthcheck:
-          test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+          test: [ "CMD-SHELL", "pg_isready -U ${CREATOR_USER} -d ${DB_NAME}" ]
           interval: 5s
-          retries: 5
+          retries: 10
+          timeout: 3s
     db_migrations:
       image: flyway/flyway:latest
-      command: -url=jdbc:postgresql://db:5432/${POSTGRES_DB} -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -placeholders.SEED_COUNT=${SEED_COUNT} -placeholders.APP_ENV=${APP_ENV} -target=${MIGRATION_VERSION:-latest} migrate
+      command: -url=jdbc:postgresql://db:5432/${DB_NAME} -user=${CREATOR_USER} -password=${CREATOR_PASSWORD} -placeholders.SEED_COUNT=${SEED_COUNT} -placeholders.APP_ENV=${APP_ENV} -target=${MIGRATION_VERSION:-latest} migrate
       env_file:
         - .env
       volumes:

@@ -149,6 +149,11 @@ CREATE TABLE IF NOT EXISTS Notification
     created_at       TIMESTAMP              NOT NULL
 );
 
+DO
+$$
+    BEGIN
+        IF '${APP_ENV}' = 'dev' THEN
+            EXECUTE '
 INSERT INTO OrderHeader (customer_id, delivery_address_id, promocode, payment_id, total_sum, status, created_at,
                          delivery_type)
 SELECT c.customer_id,
@@ -156,9 +161,9 @@ SELECT c.customer_id,
        NULL,
        (ARRAY(SELECT payment_id FROM Payment ORDER BY random() LIMIT ${SEED_COUNT}))[random_between(1, ${SEED_COUNT})],
        0,
-       ('{new, processing, issued}'::order_status_type[])[random_between(1, 3)],
+       (''{new, processing, issued}''::order_status_type[])[random_between(1, 3)],
        faker.date_this_year()::date,
-       ('{pickup, delivery}'::delivery_type_type[])[random_between(1, 2)]
+       (''{pickup, delivery}''::delivery_type_type[])[random_between(1, 2)]
 FROM (SELECT customer_id FROM Customer ORDER BY random() LIMIT ${SEED_COUNT}) c;
 
 INSERT INTO OrderDetail (order_id, product_id, status, amount, is_returned, is_issued, date_of_issue)
@@ -167,7 +172,7 @@ WITH order_products AS
                  p.product_id,
                  p.list_price,
                  random_between(1, 5)                                                                           as amount,
-                 ('{processing, shipped, delivered, issued}'::order_detail_status_type[])[random_between(1, 4)] as status
+                 (''{processing, shipped, delivered, issued}''::order_detail_status_type[])[random_between(1, 4)] as status
           FROM OrderHeader o
                    CROSS JOIN LATERAL (
               SELECT product_id, list_price
@@ -180,8 +185,8 @@ SELECT order_id,
        status,
        amount,
        false                                                       as is_returned,
-       status = 'issued'                                           as is_issued,
-       CASE WHEN status = 'issued' THEN faker.date_this_year()::date END as date_of_issue
+       status = ''issued''                                           as is_issued,
+       CASE WHEN status = ''issued'' THEN faker.date_this_year()::date END as date_of_issue
 FROM order_products;
 
 UPDATE OrderHeader oh
@@ -215,20 +220,20 @@ WHERE p.payment_id = oh.payment_id;
 INSERT INTO PickupPointInventory (pickup_point_id, order_detail_id, status, arrival_date, pickup_untill)
 SELECT (SELECT pick_up_point_id FROM PickUpPoint ORDER BY random() LIMIT 1),
        od.order_detail_id,
-       ('{awaiting_pickup, picked_up}'::inventory_status_type[])[random_between(1, 2)],
-       oh.created_at - INTERVAL '1 day',
-       oh.created_at + INTERVAL '7 days'
+       (''{awaiting_pickup, picked_up}''::inventory_status_type[])[random_between(1, 2)],
+       oh.created_at - INTERVAL ''1 day'',
+       oh.created_at + INTERVAL ''7 days''
 FROM OrderDetail od
          JOIN OrderHeader oh ON od.order_id = oh.order_id
-WHERE oh.delivery_type = 'pickup'
+WHERE oh.delivery_type = ''pickup''
 LIMIT ${SEED_COUNT};
 
 INSERT INTO PickUpPointTransaction (pick_up_point_id, source, amount, description, received_at)
 SELECT (SELECT pick_up_point_id FROM PickUpPoint ORDER BY random() LIMIT 1),
-       ('{order_commission, other, rent, utilities, salaries, maintenance}'::transaction_source_type[])[random_between(1, 6)],
+       (''{order_commission, other, rent, utilities, salaries, maintenance}''::transaction_source_type[])[random_between(1, 6)],
        random_between(100, 10000),
-       '--',
-       NOW() - (random() * INTERVAL '365 days')
+       ''--'',
+       NOW() - (random() * INTERVAL ''365 days'')
 FROM generate_series(1, ${SEED_COUNT});
 
 INSERT INTO ProductReview (product_id, order_detail_id, rating, description)
@@ -238,7 +243,7 @@ SELECT
     random_between(1, 5),
     faker.text()
 FROM OrderDetail od
-WHERE od.status = 'delivered' OR od.status = 'issued'
+WHERE od.status = ''delivered'' OR od.status = ''issued''
 ORDER BY random()
 LIMIT ${SEED_COUNT};
 
@@ -253,18 +258,21 @@ INSERT INTO Delivery (order_header_id, shift_id, since_time, untill_time)
 SELECT
     oh.order_id,
     (ARRAY(SELECT shift_id FROM WorkingShift ORDER BY random() LIMIT ${SEED_COUNT} / 2))[random_between(1, ${SEED_COUNT} / 2)],
-    oh.created_at + INTERVAL '1 hour',
-    oh.created_at + INTERVAL '3 hours'
+    oh.created_at + INTERVAL ''1 hour'',
+    oh.created_at + INTERVAL ''3 hours''
 FROM OrderHeader oh
-WHERE oh.delivery_type = 'delivery'
+WHERE oh.delivery_type = ''delivery''
 LIMIT ${SEED_COUNT};
 
 INSERT INTO Notification (user_id, destination_type, type, message, is_read, created_at)
 SELECT c.customer_id,
-       ('{customer,seller,worker}'::destination_type_type[])[1],
-       ('{email,sms,push}'::notification_type_type[])[random_between(1, 3)],
+       (''{customer,seller,worker}''::destination_type_type[])[1],
+       (''{email,sms,push}''::notification_type_type[])[random_between(1, 3)],
        faker.sentence(),
        false,
        now()
 FROM Customer c
-LIMIT ${SEED_COUNT};
+LIMIT ${SEED_COUNT};';
+        END IF;
+    END
+$$;

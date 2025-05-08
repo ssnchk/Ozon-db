@@ -94,26 +94,31 @@ CREATE TABLE IF NOT EXISTS WorkingShift
     end_time   TIMESTAMP NOT NULL
 );
 
+DO
+$$
+    BEGIN
+        IF '${APP_ENV}' = 'dev' THEN
+            EXECUTE '
 INSERT INTO Product (product_subcategory_id, store_id, name, list_price, average_rating, brand, status)
 SELECT ps.product_subcategory_id,
        s.store_id,
-       'Product ' || s.store_id,
+       ''Product '' || s.store_id,
        CAST(random_between(50, 1000) AS FLOAT),
        cast((random() * 5) as FLOAT),
-       'Brand from' || s.name,
-       ('{available,discontinued,out_of_stock}'::product_status_type[])[random_between(1, 3)]
+       ''Brand from'' || s.name,
+       (''{available,discontinued,out_of_stock}''::product_status_type[])[random_between(1, 3)]
 FROM ProductSubcategory ps,
      Store s, generate_series(1, 5)
 LIMIT ${SEED_COUNT} * 2;
 
 INSERT INTO Discount (name, type, value, start_date, end_date, applicable_to,
                       product_id, category_id)
-SELECT 'Discount ',
-       ('{percentage, fixed}'::discount_type[])[random_between(1, 2)],
+SELECT ''Discount '',
+       (''{percentage, fixed}''::discount_type[])[random_between(1, 2)],
        (random() * 50)::DECIMAL(10, 2),
        CURRENT_DATE,
        CURRENT_DATE + (random_between(7, 30))::INT,
-       'product',
+       ''product'',
        (ARRAY(SELECT product_id FROM Product ORDER BY random() LIMIT 10))[random_between(1, 10)],
        NULL
 FROM generate_series(1, ${SEED_COUNT});
@@ -125,7 +130,7 @@ SELECT ppp.pick_up_point_id,
        faker.unique_email(),
        faker.date_this_year()::date,
        faker.date_of_birth()::date,
-       ('{manager,operator,courier}'::worker_type[])[random_between(1, 3)],
+       (''{manager,operator,courier}''::worker_type[])[random_between(1, 3)],
        round(random_between(20000, 80000)::numeric, 2)
 FROM (Select pick_up_point_id FROM PickUpPoint) ppp,
      (SELECT * FROM generate_series(1, 3)) g
@@ -150,6 +155,10 @@ FROM (SELECT product_id FROM Product ORDER BY random() LIMIT ${SEED_COUNT} / 3) 
 
 INSERT INTO WorkingShift (worker_id, start_time, end_time)
 SELECT w.worker_id,
-       (CURRENT_DATE + (random_between(8, 11) || ':00')::time),
-       (CURRENT_DATE + (random_between(16, 20) || ':00')::time)
+       (CURRENT_DATE + (random_between(8, 11) || '':00'')::time),
+       (CURRENT_DATE + (random_between(16, 20) || '':00'')::time)
 FROM (SELECT worker_id FROM PickUpPointWorker ORDER BY random() LIMIT ${SEED_COUNT} / 2) w;
+';
+        END IF;
+    END
+$$;
