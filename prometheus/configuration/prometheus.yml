@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s # интервал сбора и очистки данных с целей
+
+scrape_configs:
+  - job_name: prometheus # имя задания, которое будет собирать данные
+    static_configs: # целевые адреса целей в рамках указанного задания
+      - targets: ['prometheus-exporter:9187']

@@ -35,14 +35,14 @@ $$
 $$;
 
 
-CREATE TABLE IF NOT EXISTS Admin
+CREATE TABLE IF NOT EXISTS admin
 (
     admin_id SERIAL PRIMARY KEY,
     login    VARCHAR(255) NOT NULL,
     password VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Customer
+CREATE TABLE IF NOT EXISTS customer
 (
     customer_id       SERIAL PRIMARY KEY,
     is_banned         BOOLEAN             NOT NULL DEFAULT false,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS Customer
     birth_date        DATE                NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Address
+CREATE TABLE IF NOT EXISTS address
 (
     address_id   SERIAL PRIMARY KEY,
     street       VARCHAR(255) NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS Address
     postal_code  VARCHAR(10)  NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Seller
+CREATE TABLE IF NOT EXISTS seller
 (
     seller_id  SERIAL PRIMARY KEY,
     is_banned  BOOLEAN             NOT NULL DEFAULT false,
@@ -78,13 +78,13 @@ CREATE TABLE IF NOT EXISTS Seller
     birth_date DATE                NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS ProductCategory
+CREATE TABLE IF NOT EXISTS productCategory
 (
     product_category_id SERIAL PRIMARY KEY,
     name                VARCHAR(255) NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS Promocode
+CREATE TABLE IF NOT EXISTS promocode
 (
     code                VARCHAR(20) PRIMARY KEY,
     discount_amount     FLOAT   NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS Promocode
     is_available        BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE TABLE IF NOT EXISTS Payment
+CREATE TABLE IF NOT EXISTS payment
 (
     payment_id     SERIAL PRIMARY KEY,
     payment_method payment_method_type NOT NULL,
@@ -107,7 +107,7 @@ CREATE TYPE work_hours AS
     closes_at TIME
 );
 
-CREATE TABLE IF NOT EXISTS PickupPointSchedule
+CREATE TABLE IF NOT EXISTS pickupPointSchedule
 (
     schedule_id  SERIAL PRIMARY KEY,
     weekly_hours work_hours[7] NOT NULL
@@ -118,12 +118,12 @@ $$
     BEGIN
         IF '${APP_ENV}' = 'dev' THEN
             EXECUTE '
-INSERT INTO Admin (login, password)
+INSERT INTO admin (login, password)
 SELECT faker.unique_user_name(),
        faker.password()
 FROM generate_series(1, ${SEED_COUNT});
 
-INSERT INTO Customer (is_banned,
+INSERT INTO customer (is_banned,
                       email,
                       phone,
                       password,
@@ -149,7 +149,7 @@ SELECT faker.street_name(),
        random_between(1, 10000000)::varchar
 FROM generate_series(1, ${SEED_COUNT});
 
-INSERT INTO Seller (is_banned, full_name, phone, email, password, hire_date, birth_date)
+INSERT INTO seller (is_banned, full_name, phone, email, password, hire_date, birth_date)
 SELECT false,
        faker.name(),
        faker.unique_phone_number(),
@@ -159,25 +159,25 @@ SELECT false,
        faker.date_of_birth()::date
 FROM generate_series(1, ${SEED_COUNT});
 
-INSERT INTO ProductCategory (name)
+INSERT INTO productCategory (name)
 SELECT faker.unique_name()
 FROM generate_series(1, ${SEED_COUNT});
 
-INSERT INTO Promocode (code, discount_amount, minimal_order_price, is_available)
+INSERT INTO promocode (code, discount_amount, minimal_order_price, is_available)
 SELECT faker.unique_password(),
        random_between(10, 1000),
        random_between(1000, 3000),
        true
 FROM generate_series(1, ${SEED_COUNT} / 3);
 
-INSERT INTO Payment (payment_method, amount, status, created_at)
+INSERT INTO payment (payment_method, amount, status, created_at)
 SELECT (ARRAY [''bank_card'', ''e_wallet'', ''cash_on_delivery''])[random_between(1, 3)]::payment_method_type,
        0,
        (ARRAY [''pending'', ''completed'', ''failed''])[random_between(1, 3)]::payment_status_type,
        NOW() - (random_between(1, 365) || '' days'')::interval
 FROM generate_series(1, ${SEED_COUNT});
 
-INSERT INTO PickupPointSchedule (weekly_hours)
+INSERT INTO pickupPointSchedule (weekly_hours)
 SELECT ARRAY[
            ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME),
            ROW(((random_between(0, 3) + 8)::varchar || '':00'')::TIME, ((random_between(0, 4) + 16)::varchar || '':00'')::TIME),

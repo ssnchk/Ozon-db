@@ -1,32 +1,170 @@
 name: ozon
 services:
-    db:
-        build:
-          context: ./postgres_db
-        container_name: ozon-db
-        restart: always
-        env_file:
-          - .env
-        ports:
-          - ${LOCAL_PORT}:5432
-        volumes:
-          - ./postgres_db/init_scripts:/docker-entrypoint-initdb.d
-          - db-data:/var/lib/postgresql/data
-        healthcheck:
-          test: [ "CMD-SHELL", "pg_isready -U ${CREATOR_USER} -d ${DB_NAME}" ]
-          interval: 5s
-          retries: 10
-          timeout: 3s
-    db_migrations:
-      image: flyway/flyway:latest
-      command: -url=jdbc:postgresql://db:5432/${DB_NAME} -user=${CREATOR_USER} -password=${CREATOR_PASSWORD} -placeholders.SEED_COUNT=${SEED_COUNT} -placeholders.APP_ENV=${APP_ENV} -target=${MIGRATION_VERSION:-latest} migrate
-      env_file:
-        - .env
-      volumes:
-        - ./flyway/migrations:/flyway/sql
-      depends_on:
-         db:
-          condition: service_healthy
+  etcd1: &etcd
+    build:
+      context: ./patroni
+    environment:
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: ozon
+      ETCD_UNSUPPORTED_ARCH: arm64
+    container_name: etcd1
+    hostname: etcd1
+    command: etcd --name etcd1 --initial-advertise-peer-urls http://etcd1:2380
+
+  etcd2:
+    <<: *etcd
+    container_name: etcd2
+    hostname: etcd2
+    command: etcd --name etcd2 --initial-advertise-peer-urls http://etcd2:2380
+
+  etcd3:
+    <<: *etcd
+    container_name: etcd3
+    hostname: etcd3
+    command: etcd --name etcd3 --initial-advertise-peer-urls http://etcd3:2380
+
+  haproxy:
+    build:
+      context: ./patroni
+    env_file: .env
+    hostname: haproxy
+    container_name: haproxy
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    command: haproxy
+    environment: &haproxy_env
+      ETCDCTL_ENDPOINTS: http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
+      PATRONI_ETCD3_HOSTS: "'etcd1:2379','etcd2:2379','etcd3:2379'"
+      PATRONI_SCOPE: ozon_scope
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-h", "localhost", "-p", "5000", "-U", "postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  patroni1:
+    build:
+      context: ./patroni
+    env_file: .env
+    hostname: patroni1
+    container_name: patroni1
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni1
+
+  patroni2:
+    build:
+      context: ./patroni
+    env_file: .env
+    hostname: patroni2
+    container_name: patroni2
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni2
+
+  patroni3:
+    build:
+      context: ./patroni
+    env_file: .env
+    hostname: patroni3
+    container_name: patroni3
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni3
+
+  init_bd_service:
+    build:
+      context: ./init_db
+    env_file: .env
+    depends_on:
+      haproxy:
+        condition: service_healthy
+
+  db_migrations:
+    image: flyway/flyway:latest
+    command: -url=jdbc:postgresql://haproxy:5000/${DB_NAME} -user=${CREATOR_USER} -password=${CREATOR_PASSWORD} -placeholders.SEED_COUNT=${SEED_COUNT} -placeholders.APP_ENV=${APP_ENV} -target=${MIGRATION_VERSION:-latest} migrate
+    env_file:
+      - .env
+    volumes:
+      - ./flyway/migrations:/flyway/sql
+    depends_on:
+      init_bd_service:
+        condition: service_completed_successfully
+
+  prometheus-exporter:
+    image: prometheuscommunity/postgres-exporter
+    environment:
+      DATA_SOURCE_URI: haproxy:5000/postgres?sslmode=disable
+      DATA_SOURCE_USER: ${CREATOR_USER}
+      DATA_SOURCE_PASS: ${CREATOR_PASSWORD}
+    env_file:
+      - .env
+    depends_on:
+      haproxy:
+        condition: service_healthy
+    ports:
+      - "9187:9187"
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/configuration:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - prometheus-exporter
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+  request_service:
+    build:
+      context: ./working_service
+    container_name: ozon-request-service
+    env_file:
+      - .env
+    depends_on:
+      db_migrations:
+        condition: service_completed_successfully
+    volumes:
+      - ./service_sql:/app/sql
+  db-backup:
+    image: alpine:latest
+    container_name: db_backup
+    env_file:
+      - .env
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${CREATOR_USER}
+      - DB_PASSWORD=${CREATOR_PASSWORD}
+    volumes:
+      - ./backup:/var/backup
+    entrypoint:
+      - sh
+      - -c
+      - |
+        apk add --no-cache postgresql-client bash &&
+         chmod +x /var/backup/backup_script.sh &&
+         echo "$$BACKUP_INTERVAL_CRON /var/backup/backup_script.sh" | crontab - &&
+         crond -f
+    depends_on:
+      haproxy:
+        condition: service_healthy
 
 volumes:
-    db-data:
+  grafana-storage:

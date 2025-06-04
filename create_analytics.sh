@@ -4,13 +4,13 @@ source ./.env
 
 [ -z "$POSTGRES_PASSWORD" ] && { echo "Не указан POSTGRES_PASSWORD в .env"; exit 1; }
 [ -z "$POSTGRES_USER" ] && { echo "Не указан POSTGRES_USER в .env"; exit 1; }
-[ -z "$POSTGRES_DB" ] && { echo "Не указан POSTGRES_DB в .env"; exit 1; }
+[ -z "$DB_NAME" ] && { echo "Не указан POSTGRES_DB в .env"; exit 1; }
 [ -z "$ANALYST_NAMES" ] && { echo "Не указан ANALYST_NAMES в .env"; exit 1; }
-[ -z "$LOCAL_PORT" ] && { echo "Не указан LOCAL_PORT в .env"; exit 1; }
+[ -z "$LOCAL_DB_PORT" ] && { echo "Не указан LOCAL_DB_PORT в .env"; exit 1; }
 
 
 run_psql() {
-  PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -p "$LOCAL_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"
+  PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -p "$LOCAL_DB_PORT" -U "$POSTGRES_USER" -d "$DB_NAME" -c "$1"
 }
 
 run_psql "CREATE ROLE analytic;"
